@@ -4,15 +4,16 @@ const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
 const load = document.querySelector('.load')
 let page = 1;
+let query = '';
 
 form.addEventListener('submit', onSubmit);
 
 function onSubmit(e) {
   e.preventDefault();
-  const item = e.currentTarget.elements.searchQuery.value.trim();
-  fetchPhotos(item).then((data) => {
+  query = e.currentTarget.elements.searchQuery.value.trim();
+  fetchPhotos(query).then((data) => {
     page = 1
-    if(!item){
+    if(!query){
       console.log('Sorry, there are no images matching your search query. Please try again.')
       return
     }
@@ -42,15 +43,15 @@ function createMarkup(obj) {
     </div>
   </div>`
  })
-  gallery.innerHTML = markup
+  gallery.insertAdjacentHTML('beforeend', markup)
 }
 
 load.addEventListener('click', onLoadMore)
 
 function onLoadMore(e){
-  fetchPhotos(page += 1).then(res => {
+  page += 1
+  fetchPhotos(query, page).then(res => {
     console.log(res.hits)
-    // const markup = createMarkup(res.hits)
-    // gallery.insertAdjacentElement('beforeend', markup)
+    createMarkup(res.hits)
   })
 }
