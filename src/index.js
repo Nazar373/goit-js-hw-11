@@ -10,6 +10,7 @@ form.addEventListener('submit', onSubmit);
 
 function onSubmit(e) {
   e.preventDefault();
+  gallery.innerHTML = '';
   query = e.currentTarget.elements.searchQuery.value.trim();
   fetchPhotos(query).then((data) => {
     page = 1
@@ -17,13 +18,16 @@ function onSubmit(e) {
       console.log('Sorry, there are no images matching your search query. Please try again.')
       return
     }
-    createMarkup(data.hits)})
+    gallery.innerHTML = createMarkup(data.hits)})
+  
+    // .catch(err => console.log(err))
+    // .finally(gallery.innerHTML = '');
 }
 
 function createMarkup(obj) {
   // console.log(JSON.stringify(obj))
   // console.log(Object.values(obj))
-  const markup = obj.reduce((acc, {webformatURL, largeImageURL, tags, likes, views, comments, downloads}) => {
+  return obj.reduce((acc,{webformatURL, largeImageURL, tags, likes, views, comments, downloads}) => {
    return acc += `<div class="photo-card">
     <img src="${largeImageURL}" alt="${tags}" loading="lazy" width="300" height="300" />
     <div class="info">
@@ -42,8 +46,9 @@ function createMarkup(obj) {
       </p>
     </div>
   </div>`
- })
-  gallery.insertAdjacentHTML('beforeend', markup)
+ }, '')
+//  .join('')
+  // gallery.insertAdjacentHTML('beforeend', markup)
 }
 
 load.addEventListener('click', onLoadMore)
@@ -52,6 +57,6 @@ function onLoadMore(e){
   page += 1
   fetchPhotos(query, page).then(res => {
     console.log(res.hits)
-    createMarkup(res.hits)
+    gallery.insertAdjacentHTML('beforeend', createMarkup(res.hits))
   })
 }
