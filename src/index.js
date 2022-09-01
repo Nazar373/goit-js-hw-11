@@ -1,37 +1,55 @@
-import fetchPhotos from './fetchPhotos.js'
+import fetchPhotos from './fetchPhotos.js';
+import Notiflix from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
-const load = document.querySelector('.load')
+const loadMore = document.querySelector('.load-more');
+const options = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 1
+}
+// const observer = new IntersectionObserver(onUpdate, options);
 let page = 1;
 let query = '';
+let perPage = 40;
+let totalPages = 0;
 
 form.addEventListener('submit', onSubmit);
+gallery.addEventListener('click', onClickImg);
 
 function onSubmit(e) {
   e.preventDefault();
   gallery.innerHTML = '';
+  loadMore.classList.add('is-hidden');
   query = e.currentTarget.elements.searchQuery.value.trim();
-  fetchPhotos(query).then((data) => {
+  fetchPhotos(query).then((respData) => {
+    // console.log(respData)
     page = 1
     if(!query){
-      console.log('Sorry, there are no images matching your search query. Please try again.')
+      Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
       return
     }
-    gallery.innerHTML = createMarkup(data.hits)})
-  
+    if(respData.data.totalHits > perPage) {
+      loadMore.classList.remove('is-hidden')
+    }
+    Notiflix.Notify.success(`Hooray! We found ${respData.data.totalHits} images.`)
+    gallery.innerHTML = createMarkup(respData.data.hits)})
+    // observer.observe(loadMore)
     // .catch(err => console.log(err))
     // .finally(gallery.innerHTML = '');
 }
 
 function createMarkup(obj) {
-  // console.log(JSON.stringify(obj))
-  // console.log(Object.values(obj))
+  console.log(obj)
   return obj.reduce((acc,{webformatURL, largeImageURL, tags, likes, views, comments, downloads}) => {
    return acc += `<div class="photo-card">
-    <img src="${largeImageURL}" alt="${tags}" loading="lazy" width="300" height="300" />
+    <a href="${largeImageURL}">
+    <img src="${webformatURL}" loading="lazy" alt="${tags}"/>
+    </a>
     <div class="info">
-      <a href="${webformatURL}">clickMe</a>
       <p class="info-item">
         <b>Likes ${likes}</b>
       </p>
@@ -51,12 +69,39 @@ function createMarkup(obj) {
   // gallery.insertAdjacentHTML('beforeend', markup)
 }
 
-load.addEventListener('click', onLoadMore)
+loadMore.addEventListener('click', onLoadMore)
 
 function onLoadMore(e){
   page += 1
   fetchPhotos(query, page).then(res => {
     console.log(res.hits)
-    gallery.insertAdjacentHTML('beforeend', createMarkup(res.hits))
+    if (Math.floor(res.totalHits / 40) < page){
+      loadMore.classList.add('is-hidden');
+      Notiflix.Notify.info("We're sorry, but you've reached the end of search results.")
+    }
+    gallery.insertAdjacentHTML('beforeend', createMarkup(res.data.hits))
   })
 }
+
+function onClickImg(e) {
+  e.preventDefault();
+  console.log(e)
+  let lightbox = new SimpleLightbox(".gallery a", {captionDelay: 250, captionsData: 'alt' });
+  lightbox.refresh();
+}
+
+// function onUpdate(entries) {
+//   entries.forEach(entry => {
+//     if(entry.isIntersecting){
+//       fetchPhotos(page += 1).then((data) => {
+//         if(data.data.totalHits < page) {
+//           loadMore.classList.add('is-hidden');
+//           Notiflix.Notify.info("We're sorry, but you've reached the end of search results.")
+//           return
+//         }
+//         console.log(data.data.totalHits)
+//         gallery.insertAdjacentHTML('beforeend', createMarkup(data.data.hits))
+//         console.log(page)
+//     })
+//   }});
+// }
