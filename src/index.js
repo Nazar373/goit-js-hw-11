@@ -1,5 +1,5 @@
 import fetchPhotos from './fetchPhotos.js';
-import Notiflix from 'notiflix';
+import Notiflix, { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
@@ -16,6 +16,7 @@ let page = 1;
 let query = '';
 let perPage = 40;
 let totalHits = 0;
+let valueInput = '';
 
 form.addEventListener('submit', onSubmit);
 gallery.addEventListener('click', onClickImg);
@@ -35,7 +36,14 @@ function onSubmit(e) {
     if(respData.data.totalHits > perPage) {
       loadMore.classList.remove('is-hidden')
     }
-    Notiflix.Notify.success(`Hooray! We found ${respData.data.totalHits} images.`)
+    // console.log(e.target.searchQuery.value)
+    // if(query === valueInput) {
+    //   Notiflix.Notify.warning('elements with this value have already been found');
+    //   return
+    // }
+    // valueInput = e.target.searchQuery.value
+    // console.log(respData)
+    Notiflix.Notify.success(`Hooray! We found ${respData.data.total} images.`)
     gallery.innerHTML = createMarkup(respData.data.hits)})
     // observer.observe(loadMore)
     // .catch(err => console.log(err))
