@@ -28,7 +28,7 @@ function onSubmit(e) {
   fetchPhotos(query).then((respData) => {
     // console.log(respData)
     page = 1
-    if(!query){
+    if(!query || !respData.data.hits.length){
       Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
       return
     }
