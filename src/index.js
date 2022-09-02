@@ -15,7 +15,7 @@ const options = {
 let page = 1;
 let query = '';
 let perPage = 40;
-let totalPages = 0;
+let totalHits = 0;
 
 form.addEventListener('submit', onSubmit);
 gallery.addEventListener('click', onClickImg);
@@ -43,7 +43,7 @@ function onSubmit(e) {
 }
 
 function createMarkup(obj) {
-  console.log(obj)
+  // console.log(obj)
   return obj.reduce((acc,{webformatURL, largeImageURL, tags, likes, views, comments, downloads}) => {
    return acc += `<div class="photo-card">
     <a href="${largeImageURL}">
@@ -73,11 +73,15 @@ loadMore.addEventListener('click', onLoadMore)
 
 function onLoadMore(e){
   page += 1
+  // console.log(totalHits)
   fetchPhotos(query, page).then(res => {
-    console.log(res.hits)
-    if (Math.floor(res.totalHits / 40) < page){
+    // console.log(res.hits)
+    totalHits = res.data.hits.length
+    // console.log(totalHits)
+    if (totalHits < 40){
       loadMore.classList.add('is-hidden');
       Notiflix.Notify.info("We're sorry, but you've reached the end of search results.")
+      return
     }
     gallery.insertAdjacentHTML('beforeend', createMarkup(res.data.hits))
   })
@@ -85,7 +89,7 @@ function onLoadMore(e){
 
 function onClickImg(e) {
   e.preventDefault();
-  console.log(e)
+  // console.log(e)
   let lightbox = new SimpleLightbox(".gallery a", {captionDelay: 250, captionsData: 'alt' });
   lightbox.refresh();
 }
@@ -94,7 +98,14 @@ function onClickImg(e) {
 //   entries.forEach(entry => {
 //     if(entry.isIntersecting){
 //       fetchPhotos(page += 1).then((data) => {
-//         if(data.data.totalHits < page) {
+//         if(totalHits === 0 || totalHits < 0) {
+//           loadMore.classList.add('is-hidden');
+//           Notiflix.Notify.info("We're sorry, but you've reached the end of search results.")
+//           return
+//         }
+//         totalHits = data.data.hits.length
+//         console.log(totalHits)
+//         if (totalHits < 40){
 //           loadMore.classList.add('is-hidden');
 //           Notiflix.Notify.info("We're sorry, but you've reached the end of search results.")
 //           return
